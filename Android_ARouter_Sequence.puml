@@ -1,0 +1,41 @@
+@startuml
+autonumber
+actor APP1
+APP1 -> ARouter+: init()
+ARouter -> _ARouter+: init()
+_ARouter -> LogisticsCenter+: LogisticsCenter.init(mContext, executor)
+LogisticsCenter -> LogisticsCenter+: loadRouteMap()
+note left: arouter-auto-register plugin will generate code inside this method \n call this method to register all Routers, Interceptors and Providers
+LogisticsCenter -> LogisticsCenter+: register()
+LogisticsCenter -> LogisticsCenter+: registerRouteRoot((IRouteRoot) obj)
+LogisticsCenter -> IRouteRoot+: loadInto(Warehouse.groupsIndex)
+return
+return
+LogisticsCenter -> LogisticsCenter+: registerProvider((IProviderGroup) obj)
+LogisticsCenter -> IProviderGroup+: loadInto(Warehouse.providersIndex)
+return
+return
+LogisticsCenter -> LogisticsCenter+: registerInterceptor((IInterceptorGroup) obj)
+LogisticsCenter -> IInterceptorGroup+: loadInto(Warehouse.interceptorsIndex)
+return
+return
+return
+return
+return
+return
+return
+
+
+APP1 -> ARouter+: build(String path)
+return postcard:Postcard
+APP1 -> Postcard+: navigation()
+Postcard -> ARouter+: navigation()
+ARouter -> _ARouter+: navigation()
+_ARouter -> LogisticsCenter+: LogisticsCenter.completion(postcard);
+_ARouter -> _ARouter+: _navigation()
+return
+return
+return
+return
+return
+@endumlx

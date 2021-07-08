@@ -1,0 +1,14 @@
+@startuml
+autonumber
+InputMangerService -> InputManagerService.cpp++: mPtr = nativeInit(this, mContext, \n mHandler.getLooper().getQueue())
+    create NativeInputManager.cpp
+    InputManagerService.cpp -> NativeInputManager.cpp++: new NativeInputManager(contextObj, \n serviceObj,messageQueue->getLooper())
+        create InputManager.cpp
+        NativeInputManager.cpp -> InputManager.cpp++: new InputManager(this, this)
+            InputManager.cpp -> InputDispatcherFactory.cpp++: mDispatcher = createInputDispatcher(dispatcherPolicy)
+                create InputDispatcher.cpp
+                InputDispatcherFactory.cpp -> InputDispatcher.cpp++: new android::inputdispatcher::InputDispatcher(policy)
+                return
+            return
+
+@enduml

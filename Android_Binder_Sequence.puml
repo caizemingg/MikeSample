@@ -1,0 +1,58 @@
+@startuml
+autonumber
+actor APP1
+APP1 -> Proxy++: xxxMethod()
+    Proxy -> BinderProxy++: mRemote.transact(\n Stub.TRANSACTION_xxxMethod, \n _data, null, 0)
+        BinderProxy -> android_util_Binder.cpp++: transactNative(code, data, reply, flags)
+        note left: {"transactNative", \n"(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z", \n(void*)android_os_BinderProxy_transact}
+            android_util_Binder.cpp -> android_util_Binder.cpp++: IBinder* target = \n getBPNativeData(env, obj)->mObject.get()
+            note right: android_util_Binder.cpp \n int_register_android_os_BinderProxy(JNIEnv* env) \n gBinderProxyOffsets.mNativeData = GetFieldIDOrDie(env, clazz, "mNativeData", "J");
+            return target
+            android_util_Binder.cpp -> BpBinder.cpp++: status_t err = \n target->transact(code, *data, reply, flags)
+                BpBinder.cpp -> IPCThreadState.cpp++: status_t status = IPCThreadState::self()-> \n transact(mHandle, code, data, reply, flags)
+                    IPCThreadState.cpp -> IPCThreadState.cpp++: err = writeTransactionData(\n BC_TRANSACTION, flags, \n handle, code, data, nullptr);
+                        IPCThreadState.cpp -> Parcel.cpp++: mOut.writeInt32(cmd)
+                        return
+                        IPCThreadState.cpp -> Parcel.cpp++: mOut.writeInt32(cmd)
+                        return
+                    return err
+                    IPCThreadState.cpp -> IPCThreadState.cpp++ : err = waitForResponse()
+                        IPCThreadState.cpp -> IPCThreadState.cpp++ : err = talkWithDriver()
+                            IPCThreadState.cpp -> binder.c++: ioctl(mProcess->mDriverFD, \n BINDER_WRITE_READ, &bwr)
+                            note right:binder_ioctl()
+                                binder.c -> binder.c++: ret = binder_ioctl_write_read(\n filp, cmd, arg, thread)
+                                    binder.c -> binder.c++: binder_thread_write()
+                                        binder.c -> binder.c++: binder_transaction()
+                                        note left: 把未完成工作加入到本线程的todo列表，把需要干的事情加入到目标线程的todo队列 \n t->work.type = BINDER_WORK_TRANSACTION \n list_add_tail(&t->work.entry, target_list) \n tcomplete->type = BINDER_WORK_TRANSACTION_COMPLETE \n list_add_tail(&tcomplete->entry, &thread->todo);
+                                            binder.c -> wait.c++: wake_up_interruptible(target_wait)
+                                                actor APP2
+                                                wait.c -> APP2: wake up
+                                            return
+                                        return
+                                    return
+                                    binder.c -> binder.c++: binder_thread_read()
+                                        binder.c -> wait.c++: wait_event_interruptible(\n binder_user_error_wait, \n binder_stop_on_user_error < 2)
+                                            APP2 -> IPCThreadState.cpp++: executeCommand()
+                                                IPCThreadState.cpp -> JavaBBinder.cpp++: error = reinterpret_cast<BBinder*>(tr.cookie)->transact(tr.code, buffer, &reply, tr.flags);
+                                                    JavaBBinder.cpp -> Binder++: jboolean res = env->CallBooleanMethod(\n mObject, gBinderOffsets.mExecTransact,\n code, reinterpret_cast<jlong>(&data), \n reinterpret_cast<jlong>(reply), flags);
+                                                    note left: android_util_Binder.cpp \n int_register_android_os_BinderProxy(JNIEnv* env) \n gBinderOffsets.mExecTransact = GetMethodIDOrDie(env, clazz, "execTransact", "(IJJI)Z")
+                                                        Binder -> Stub++: onTransact()
+                                                            Stub -> Stub++: xxxMethod()
+                                                            return
+                                                        return
+                                                    return res
+                                                return error
+                                            return
+                                        APP2 -> wait.c: wake up
+                                        return
+                                    return
+                                return ret
+                            return ret
+                        return err
+                    return err
+                return status
+            return err
+        return err
+    return
+return
+@enduml

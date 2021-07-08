@@ -1,0 +1,28 @@
+@startuml
+autonumber
+
+init进程 -> service_manager.c+ :main()
+note top: 解析init.rc启动ServiceManager
+service_manager.c -> binder.c+: binder_open()
+binder.c -> binder驱动+: open()
+return
+binder.c -> binder驱动+: mmap()
+return
+return
+service_manager.c -> binder.c+: binder_become_context_manager()
+binder.c -> binder驱动+: ioctl(bs-fd,BINDER_SET_CONTEXT_MGR, 0)
+return
+return
+service_manager.c -> binder.c+: binder_loop()
+binder.c -> binder.c+: binder_write()
+binder.c -> binder驱动+: ioctl()
+return
+binder.c -> binder.c+: binder_parse()
+binder.c -> service_manager.c+: svcmgr_handler()
+return
+return
+return
+
+
+
+@enduml

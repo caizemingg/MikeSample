@@ -1,0 +1,70 @@
+@startuml
+title Android_Handler_Sequence
+autonumber
+actor Thread1
+
+Thread1-> Looper++: prepare()
+    Looper -> Looper++: prepare(true)
+        Looper -> Looper++: sThreadLocal.set(new Looper(true))
+            create MessageQueue
+            Looper -> MessageQueue++: mQueue = \new MessageQueue(true)
+                MessageQueue -> android_os_MessageQueue.cpp++: mPtr = nativeInit()
+                    create  NativeMessageQueue.cpp
+                    android_os_MessageQueue.cpp -> NativeMessageQueue.cpp++: new NativeMessageQueue.cpp()
+                        create  Looper.cpp
+                        NativeMessageQueue.cpp -> Looper.cpp++:  mLooper = new Looper(false)
+                            Looper.cpp -> Looper.cpp++: rebuildEpollLocked()
+                                Looper.cpp -> epoll++: mEpollFd.reset(epoll_create1(EPOLL_CLOEXEC))
+                                return
+                                Looper.cpp -> epoll++: epoll_ctl(mEpollFd.get(), \nEPOLL_CTL_ADD, mWakeEventFd.get(), &eventItem)
+                                return
+                            return
+                        return looper: Looper.cpp
+                    return nativeQueue:NativeMessageQueue.cpp
+                return reinterpret_cast<jlong>\n(nativeQueue):long
+            return mQueue:MessageQueue
+        return
+    return
+return
+
+Thread1 -> Looper++: loop()
+Looper -> Looper++: me = myLooper();
+loop
+Looper -> MessageQueue++: me.mQueue.next()
+note right: block, if no message or all message is not ready
+    MessageQueue -> android_os_MessageQueue.cpp++: nativePollOnce()
+        android_os_MessageQueue.cpp -> NativeMessageQueue.cpp++: pollOnce()
+            NativeMessageQueue.cpp -> Looper.cpp++: pollOnce()
+                Looper.cpp -> Looper.cpp++: pollInner()
+                    Looper.cpp -> epoll++: epoll_wait(mEpollFd.get(), eventItems, \nEPOLL_MAX_EVENTS, timeoutMillis)
+                    note left: block
+                    return eventCount:int
+                return POLL_WAKE:int
+            return POLL_WAKE:int
+        return POLL_WAKE:int
+    return POLL_WAKE:int
+return msg:Message
+
+Looper -> Handler++: msg.target.dispatchMessage()
+    Handler -> Handler++: handleMessage()
+    return
+return
+end
+
+actor Thread2
+Thread2 -> Handler++: sendMessageDelayed()
+    Handler -> Handler++: sendMessageAtTime()
+        Handler -> MessageQueue++: enqueueMessage()
+        note left: wake up, if  message is ready
+            MessageQueue -> android_os_MessageQueue.cpp++: nativeWake(mPtr)
+                android_os_MessageQueue.cpp -> NativeMessageQueue.cpp++: wake()
+                    NativeMessageQueue.cpp -> Looper.cpp++: wake()
+                        Looper.cpp -> epoll++: TEMP_FAILURE_RETRY(\nwrite(mWakeEventFd.get(), \n&inc, sizeof(uint64_t)))
+                        return
+                    return
+                return
+            return
+        return true
+    return true
+return true
+@enduml

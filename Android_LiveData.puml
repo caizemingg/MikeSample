@@ -1,0 +1,21 @@
+@startuml
+autonumber
+ComponentActivity -> LiveData+: observe(LifecycleOwner, Observer)
+LiveData -> LifecycleBoundObserve+: wrapper = new LifecycleBoundObserve(LifecycleOwner, Observer)
+return wrapper
+LiveData -> LifecycleRegistry+: owner.getLifecycle().addObserver(wrapper)
+return
+return
+
+ComponentActivity -> LiveData+: setValue(T value)
+LiveData -> LiveData+: dispatchingValue()
+LiveData -> LiveData+: considerNotify()
+note left: observer.mActive 为false，直接返回，不做回调。\n mActive跟Lifecycle的生命周期相关。
+LiveData -> Observer+: observer.mObserver.onChanged((T) mData)
+return
+return
+return
+return
+
+
+@enduml

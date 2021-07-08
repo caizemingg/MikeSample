@@ -1,0 +1,24 @@
+@startuml
+autonumber
+actor App
+App -> ComponentActivity++: onCreate()
+ComponentActivity -> ComponentActivity+: ReportFragment.injectIfNeededIn(this)
+return
+return
+App -> ReportFragment+: onActivityCreated()
+ReportFragment -> ReportFragment+:  dispatch(Lifecycle.Event.ON_CREATE)
+ReportFragment -> ComponentActivity+: getLifecycle()
+return mLifecycleRegistry
+ReportFragment -> LifecycleRegistry+: mLifecycleRegistry.handleLifecycleEvent()
+LifecycleRegistry -> LifecycleRegistry+: sync()
+LifecycleRegistry -> ObserverWithState+: dispatchEvent()
+ObserverWithState -> LifecycleEventObserver+: onStateChanged(owner, event)
+return
+return
+return
+return
+return
+return
+
+
+@enduml

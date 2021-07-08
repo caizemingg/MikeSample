@@ -1,0 +1,52 @@
+@startuml
+autonumber
+actor APP
+APP -> Activity++: startActivity
+Activity -> ContextImpl++: startActivity()
+ContextImpl -> Instrumentation++: execStartActivity()
+Instrumentation -> IActivityManager.Stub.Proxy++: startActivity()
+IActivityManager.Stub.Proxy -> AMS++:startActivity()
+AMS -> ApplicationThread++: scheduleLaunchActivity()
+ApplicationThread -> ActivityThread++: handleLaunchActivity()
+ActivityThread -> ActivityThread++: performLaunchActivity()
+ActivityThread -> Instrumentation++: new Activity()
+return activity
+ActivityThread -> Activity++: attach()
+create PhoneWindow
+Activity -> PhoneWindow: mWindow = new PhoneWindow()
+return
+ActivityThread -> Instrumentation++: callActivityOnCreate()
+Instrumentation -> Activity++: onCreate()
+Activity -> Activity++: setContentView()
+Activity -> PhoneWindow++: setContentView()
+PhoneWindow -> PhoneWindow++: installDecor()
+return
+return
+return
+return
+return
+return
+ActivityThread -> ActivityThread++: handleResumeActivity()
+ActivityThread -> ActivityThread++: performResumeActivity()
+return
+ActivityThread -> WindowManagerImpl++: addView()
+WindowManagerImpl -> WindowManagerGlobal++: addView()
+create ViewRootImpl
+WindowManagerGlobal -> ViewRootImpl: root = new ViewRootImpl()
+WindowManagerGlobal -> ViewRootImpl++: setView()
+ViewRootImpl -> ViewRootImpl++: requestLayout()
+ViewRootImpl -> IWindowSession++: addToDisplay(IWindow.Stub)
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+@enduml

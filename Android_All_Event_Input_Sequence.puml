@@ -1,0 +1,40 @@
+@startuml
+autonumber
+Looper.cpp -> Looper.cpp++: pollInner
+     Looper.cpp -> NativeInputEventReceiver.cpp++: response.request.callback->\nhandleEvent(fd, events, data)
+        NativeInputEventReceiver.cpp -> NativeInputEventReceiver.cpp++: consumeEvents()
+            NativeInputEventReceiver.cpp -> InputConsumer.cpp++: consume()
+            return OK(0)
+        NativeInputEventReceiver.cpp -> WindowInputEventReceiver+: env->CallVoidMethod(receiverObj.get(),\ngInputEventReceiverClassInfo.dispatchInputEvent, seq, inputEventObj);
+            WindowInputEventReceiver -> WindowInputEventReceiver+: OnInputEvent()
+                WindowInputEventReceiver -> ViewRootImpl+: enqueueInputEvent()
+                     ViewRootImpl -> ViewRootImpl+: doProcessInputEvents()
+                        ViewRootImpl -> ViewRootImpl+: deliverInputEvent()
+                        ViewRootImpl -> ViewPostImeInputStage+: deliver()
+                             ViewPostImeInputStage -> ViewPostImeInputStage+: onProcess()
+                                ViewPostImeInputStage -> ViewRootImpl+: processPointerEvent()
+                                    ViewRootImpl ->  DecorView+: dispatchPointerEvent()
+                                        DecorView -> DecorView+: dispatchTouchEvent()
+                                            DecorView -> Activity+: Window.Callback.dispatchTouchEvent()
+                                                Activity -> PhoneWindow+: superDispatchTouchEvent()
+                                                    PhoneWindow -> DecorView+: superDispatchTouchEvent()
+                                                        DecorView -> ViewGroup+: super.dispatchTouchEvent()
+                                                        return
+                                                    return
+                                                Activity -> Activity+: onTouchEvent()
+                                                return
+                                        return
+                                    return
+                                return
+                             return
+                         return
+                     return
+                return
+            return
+        return
+        return
+     return
+return
+return
+return
+@enduml

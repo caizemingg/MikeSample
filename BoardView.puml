@@ -1,0 +1,73 @@
+@startuml
+
+hide empty members
+
+interface BoardContractView {
+    + fun getPicDataProvider(): IPicDataProvider
+    + fun handleIntent(intent: Intent, isFirstOpen: Boolean): Boolean
+    + fun handleSPKeyCode(keyCode: Int, event: KeyEvent?): Boolean
+    + fun showPageRatio (ratio: Float)
+    + fun exitBoard(force: Boolean , onExit: (() -> Unit)? = null)
+    + fun resetBoard()
+}
+interface BoardContractViewTool {
+    + fun updateMoveToView(bounds: RectF, elements: MutableList<ElementView<*>>)
+    + fun getToolBarRects(): MutableList<Rect>
+    + fun switchMainToolBarToSelect()
+    + fun switchMainToolBarToPenBtn()
+}
+interface BoardContractViewMenu {
+    + fun getMenuOperator(): IMenuOperate
+    + fun showMenuAdjustPosition(@IdRes fragmentId: Int, fragment: Fragment)
+    + fun hideAllSystemMenu(allowStateLoss: Boolean = false)
+    + fun hideAllMainMenu()
+    + fun hideCollBoxMenu()
+    + fun hideSketchpadMenu()
+    + fun hideAllMenu()
+    + fun jumpToSaveMenu()
+    + fun showShareView()
+    + fun showNoteView()
+}
+
+class BoardView {
+    - mMenuOperator: IMenuOperate
+    - mPicDataProvider: IPicDataProvider
+
+    + fun init(mxBoard: MXBoard, fragmentManager: FragmentManager)
+    + fun onCreate()
+    + fun onStart()
+    + fun onStop()
+    + fun onDestroy()
+}
+
+BoardContractViewTool <|-- BoardContractView
+BoardContractViewMenu <|-- BoardContractView
+MXBoardView <|-right- BoardView
+BoardContractView <|.. BoardView
+
+
+interface BoardContractPresenter {
+    + fun init(mxBoard: MXBoard)
+    + fun getMxBoard(): MXBoard
+    + fun getMenuOperator(): IMenuOperate?
+    + fun checkUpgradeVersion()
+    + fun handleIntent(intent: Intent, isFirstOpen: Boolean): Boolean
+    + fun openMhbFile(path: String, needNotice: Boolean = true,
+        recordExistSaveInfo: Boolean = true)
+    + fun insertPictureElementByIntent(intent: Intent)
+    + fun hideAllMenu()
+    + fun handleToolBarBtnSelect(@IdRes fragmentId: Int, fragment: Fragment)
+    + fun exitBoard()
+    + fun resetBoard()
+}
+
+class BoardPresenter {
+    - mIntentHelper : HandlerIntentHelper
+    - mRecoverHelper: RecoverFileHelper
+    - mConfigDispatcher: DispatchConfigModel
+}
+
+BoardContractPresenter <|.. BoardPresenter
+BoardView "1"-right- "1" BoardPresenter
+
+@enduml

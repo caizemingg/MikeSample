@@ -1,0 +1,27 @@
+@startuml
+autonumber
+
+actor App
+App -> DynamicPluginManager+ : enter()
+DynamicPluginManager -> DynamicPluginManager+: updateManagerImpl()
+create ManagerImplLoader
+DynamicPluginManager -> ManagerImplLoader+: implLoader.load()
+return newImpl:PluginManagerImpl
+DynamicPluginManager -> SamplePluginManager+:enter()
+SamplePluginManager -> SamplePluginManager+: onStartActivity()
+SamplePluginManager -> SamplePluginManager+: installPlugin()
+return installedPlugin:InstalledPlugin
+SamplePluginManager -> SamplePluginManager+: startPluginActivity()
+SamplePluginManager -> SamplePluginManager+:convertActivityIntent()
+SamplePluginManager -> SamplePluginManager+: loadPlugin()
+SamplePluginManager -> SamplePluginManager+: loadPluginLoaderAndRuntime()
+SamplePluginManager -> SamplePluginManager+: loadPluginLoader()
+
+
+SamplePluginManager -> PluginLoader+: startActivityInPluginProcess()
+
+PluginLoader -> PluginLoaderBinder+: onTransact()
+PluginLoaderBinder -> DynamicPluginLoader+:startActivityInPluginProcess()
+
+
+@enduml

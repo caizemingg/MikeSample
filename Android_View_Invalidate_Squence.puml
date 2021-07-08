@@ -1,0 +1,32 @@
+@startuml
+title Android_View_Invalidate_Sequence
+autonumber
+[-> View ++ : invalidate()
+View -> View++ : invalidate(true)
+View -> View++ : invalidateInternal()
+View -> ViewParent++: mParent.invalidateChild()
+
+
+loop mParent != null
+    alt mParent instanceof ViewGroup
+        ViewParent -> ViewParent++: mParent = invalidateChildInParent()
+        return mParent
+    else mParent instanceof ViewRootImpl
+        ViewParent -> ViewParent++: invalidateRectOnScreen()
+            ViewParent -> ViewParent++: scheduleTraversals()
+                ViewParent -> Choreographer++:  mChoreographer.postCallback(\nChoreographer.CALLBACK_TRAVERSAL,\n mTraversalRunnable, null)
+                    Choreographer -> Choreographer++: postCallback(\nChoreographer.CALLBACK_TRAVERSAL,\n mTraversalRunnable, null, 0)
+                        Choreographer -> Choreographer++: postCallbackDelayedInternal(\nChoreographer.CALLBACK_TRAVERSAL,\n mTraversalRunnable, null, 0)
+                             Choreographer -> Choreographer++: scheduleFrameLocked()
+                                Choreographer -> Choreographer++: scheduleVsyncLocked()
+                                    Choreographer -> FrameDisplayEventReceiver++: scheduleVsync()
+                                        FrameDisplayEventReceiver -> android_view_DisplayEventReceiver.cpp++: nativeScheduleVsync(mReceiverPtr)
+                                            android_view_DisplayEventReceiver.cpp -> NativeDisplayEventReceiver.cpp++: scheduleVsync()
+                                                NativeDisplayEventReceiver.cpp -> NativeDisplayEventReceiver.cpp++: requestNextVsync()
+
+                Choreographer -> ViewParent--:
+        return  null
+    end
+end
+
+@enduml

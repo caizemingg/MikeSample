@@ -1,0 +1,110 @@
+@startuml
+
+hide empty members
+
+interface TeamBoardContractView {
+    + fun exit(force: Boolean)
+}
+
+class TeamBoardActivity {
+    - mScreenOnTask: ScreenOnTask
+    - mMXBoard: MXBoard
+    - mToolBoardView: BoardView
+    - mPresenter: TeamBoardContract.Presenter
+}
+
+TeamBoardContractView <|.. TeamBoardActivity
+
+note right of TeamBoardContractPresenter::showSaveView
+  提供给TeamBoardService
+  所需要的功能接口
+end note
+
+interface TeamBoardContractPresenter {
+    + fun initMXBoard(mxBoard: MXBoard)
+    + fun getMxBoard(): MXBoard
+    + fun requestPermission(activity: Activity)
+
+    + fun showSaveView()
+    + fun showShareView()
+    + fun showNoteView()
+    + fun hideAllMenu()
+    + fun exitBoard(force: Boolean)
+    + fun resetBoard()
+}
+
+interface IToolBarMenu {
+    + fun getToolBoardView(): IToolBoardToolContract.View
+    + fun getMenuOperator(): IMenuOperate
+    + fun getMxBoard(): MXBoard
+}
+
+IToolBarMenu <|-- TeamBoardContractView
+TeamBoardContractView "1"-right- "1" TeamBoardContractPresenter
+
+class MxBoardBuilder {
+    + fun setBoardView(boardView: BoardView): MxBoardBuilder
+    + fun setConfigBean(configBean: ConfigBean): MxBoardBuilder
+    + fun build(): MXBoard
+
+    - fun initWriteStateListener()
+    - fun initSelectBoxView()
+    - fun initRoamStateListener()
+    - fun initTouchListener()
+    - fun lazyInit()
+}
+
+class MxBoardExtend {
+    + fun MXBoard.resetSelectState()
+    + fun MXBoard.initBackground(configBean: ConfigBean): MXBoard
+    + fun MXBoard.initWriteConfig(): MXBoard
+    + fun MXBoard.changToWriteScene(enable: Boolean): MXBoard
+    + fun MXBoard.initEraserConfig(): MXBoard
+    + fun MXBoard.initEraserStateListener(): MXBoard
+    + fun MXBoard.initRoamConfig(): MXBoard
+    + fun MXBoard.initSelectStateListener(): MXBoard
+    + fun MXBoard.addLongClickState(): MXBoard
+}
+
+MxBoardBuilder - MxBoardExtend
+TeamBoardActivity *--- "1" MxBoardBuilder
+
+
+IToolBarMenu -left- IMenuOperate
+
+interface IMenuOperate {
+    + fun showMenu(@IdRes fragmentId: Int, fragment: Fragment)
+    + fun hideMenu(@IdRes fragmentId: Int)
+    + fun hideMenus(fragmentIds: List<Int>, allowStateLoss: Boolean = false)
+    + fun <T : BaseFragment> hideMenu(menu: Class<T>)
+    + fun isMenuShowing(@IdRes fragmentId: Int): Boolean
+    + fun <T : BaseFragment> isMenuShowing(menu: Class<T>,
+        @IdRes fragmentId: Int? = null): Boolean
+    + fun hasMenuShowing(fragmentIds: List<Int>? = null): Boolean
+    + fun <T : BaseFragment> getMenu(menu: Class<T>,
+        @IdRes fragmentId: Int? = null): T?
+    + fun getManager(): FragmentManager?
+}
+
+class TestFragment {
+    + mMXBoard: MXBoard
+    + mToolBoardView: BoardView
+}
+
+class TestActivity {
+    - mTestFragment: TestFragment
+}
+
+TestFragment *-- "1" MxBoardBuilder
+TestActivity -- TestFragment
+IToolBarMenu <|... TestActivity
+
+class BaseFragment {
+    + fun getMenuOperate(): IMenuOperate?
+    + fun getToolBoardView(): IToolBoardContract.View?
+    + fun getMxBoard(): MXBoard?
+}
+
+IMenuOperate ---- BaseFragment
+
+@enduml

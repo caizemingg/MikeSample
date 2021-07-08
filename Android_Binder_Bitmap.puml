@@ -1,0 +1,68 @@
+@startuml
+autonumber
+actor APP
+actor APP2
+create Bundle
+APP -> Bundle+: bundle = new Bundle()
+return bundle
+create Intent
+APP -> Intent+: intent = new Intent()
+return intent
+create BitmapBinder
+APP -> BitmapBinder+: bitmapBinder = new BitmapBinder()
+return bitmapBinder
+APP -> Bundle+: putBinder(bitmapBinder)
+return
+APP -> Intent+: putBundle(bundle)
+return
+APP -> Activity+: startActivity(intent)
+Activity -> Intent+: writeToParcel()
+Intent -> Parcel+: writeBundle()
+Parcel -> Bundle+: writeToParcel()
+Bundle -> BaseBundle+: writeToParcelInner()
+BaseBundle -> Parcel+: writeArrayMapInternal()
+Parcel -> Parcel+: writeValue()
+Parcel -> Parcel+: writeStrongBinder()
+Parcel -> android_os_Parcel.cpp+: nativeWriteStrongBinder()
+android_os_Parcel.cpp -> android_util_Binder.cpp+: ibinderForJavaObject()
+    android_util_Binder.cpp -> JNIEnv.cpp+: env->GetLongField(obj, gBinderOffsets.mObject);
+    return jbh: JavaBBinderHolder
+    android_util_Binder.cpp -> JavaBBinderHolder.cpp+: jbh->get(env, obj)
+    return  ibinder: JavaBBinder
+return ibinder: JavaBBinder
+android_os_Parcel.cpp -> Parcel.cpp+:writeStrongBinder(ibinder)
+Parcel.cpp ->  Parcel.cpp+: flatten_binder()
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+return
+
+APP2 -> Activity+: onCreate()
+Activity -> Bundle+: getBinder()
+return BitmapBinder.Stub.Proxy
+Activity ->  BitmapBinder+: BitmapBinder.Stub.Proxy.getBitmap()
+note left: ipc call BitmapBinder.Stub..getBitmap()
+BitmapBinder -> BitmapBinder+: onTransact()
+BitmapBinder -> Bitmap+: bitmap.writeToParcel()
+Bitmap -> Bitmap.cpp+: Bitmap_writeToParcel()
+Bitmap.cpp -> Parcel.cpp+: writeBlob()
+Parcel.cpp -> ashmem_host.cpp+: ashmem_create_region()
+return
+return
+return
+return
+return
+return
+
+return
+
+
+
+@enduml
